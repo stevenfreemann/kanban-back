@@ -5,10 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { hash, compare } from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   async createUser(user: RegisterAuthDto) {
@@ -34,7 +36,14 @@ export class AuthService {
     if (!findUser) throw new HttpException('Usuario no encontrado', 404);
     const validatePass = await compare(password, findUser.password);
     if (!validatePass) throw new HttpException('Password incorrecto', 401);
-    return findUser;
+
+    const payload = { id: findUser.id, name: findUser.name };
+    const token = this.jwtService.sign(payload);
+    const res = {
+      user: findUser,
+      token,
+    };
+    return res;
   }
   /* create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';

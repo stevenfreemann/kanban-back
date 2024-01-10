@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Simple Kanban ')
     .setDescription('Api kanban board Todo - Do - Done')
     .setVersion('1.0')
