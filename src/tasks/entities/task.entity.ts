@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum TaskType {
   TODO = 'todo',
@@ -23,4 +30,8 @@ export class Task {
     default: TaskType.TODO,
   })
   list: TaskType;
+
+  @ManyToOne(() => User, (user) => user.tasks)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

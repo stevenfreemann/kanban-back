@@ -11,28 +11,27 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.tasksService.create(createTaskDto);
+  create(
+    @Body() createTaskDto: CreateTaskDto,
+    @Param('userId') userId: number,
+  ) {
+    return this.tasksService.create(createTaskDto, userId);
   }
 
-  @Get()
-  findAll() {
-    return this.tasksService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
+  @Get('/by_user/:userId')
+  findAll(@Param('userId') userId: number) {
+    return this.tasksService.findAll(userId);
   }
 
   @Patch(':id')

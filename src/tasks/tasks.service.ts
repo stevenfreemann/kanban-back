@@ -4,21 +4,39 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Task) private readonly taskRepository: Repository<Task>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const newTask = this.taskRepository.create(createTaskDto);
+  async create(createTaskDto: CreateTaskDto, userId: number): Promise<Task> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+    const newTask = await this.taskRepository.create({
+      ...createTaskDto,
+      user,
+    });
     await this.taskRepository.save(newTask);
     return newTask;
   }
 
-  async findAll() {
-    return await this.taskRepository.find();
+  async findAll(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['tasks'],
+    });
+    const tasks = user.tasks;
+    // Si el usuario no existe, lanza una excepción
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+    return tasks;
   }
 
   async findOne(id: number): Promise<Task> {
