@@ -14,7 +14,9 @@ export class TasksService {
   ) {}
 
   async create(createTaskDto: CreateTaskDto, userId: number): Promise<Task> {
+    console.log('user', userId);
     const user = await this.userRepository.findOne({ where: { id: userId } });
+    console.log('user :>> ', user);
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
